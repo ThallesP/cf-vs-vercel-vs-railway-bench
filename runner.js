@@ -19,12 +19,12 @@ const tests = [
       "https://cf-sveltekit-bench.theo-s-cool-new-test-account-10-3.workers.dev/",
     vercelUrl: "https://vercel-svelte-bench-h.vercel.app",
   },
-  {
-    name: "shitty-sine-bench",
-    cfUrl:
-      "https://vanilla-ssr-cf.theo-s-cool-new-test-account-10-3.workers.dev/shitty-sine-bench",
-    vercelUrl: "https://vanilla-bench-v2-h.vercel.app/api/shitty-sine-bench",
-  },
+  // {
+  //   name: "shitty-sine-bench",
+  //   cfUrl:
+  //     "https://vanilla-ssr-cf.theo-s-cool-new-test-account-10-3.workers.dev/shitty-sine-bench",
+  //   vercelUrl: "https://vanilla-bench-v2-h.vercel.app/api/shitty-sine-bench",
+  // },
   {
     name: "realistic-math-bench",
     cfUrl:
@@ -49,12 +49,11 @@ async function measureResponseTime(url) {
   const start = performance.now();
   try {
     const response = await fetch(url);
-    const content = await response.text();
     const end = performance.now();
-    const responseTime = end - start;
 
     // Read the response body
-    await response.text();
+    const content = await response.text();
+    const responseTime = end - start;
 
     return {
       time: responseTime,
