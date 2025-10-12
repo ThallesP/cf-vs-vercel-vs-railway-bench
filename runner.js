@@ -43,6 +43,7 @@ async function measureResponseTime(url) {
   const start = performance.now();
   try {
     const response = await fetch(url);
+    const content = await response.text();
     const end = performance.now();
     const responseTime = end - start;
 
@@ -53,6 +54,7 @@ async function measureResponseTime(url) {
       time: responseTime,
       status: response.status,
       success: response.ok,
+      content,
     };
   } catch (error) {
     return {
