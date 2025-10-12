@@ -42,8 +42,8 @@ const tests = [
 const fs = require("fs");
 const path = require("path");
 
-const ITERATIONS = 100;
-const CONCURRENCY = 10;
+const ITERATIONS = 400;
+const CONCURRENCY = 20;
 
 async function measureResponseTime(url) {
   const start = performance.now();
@@ -71,7 +71,7 @@ async function measureResponseTime(url) {
   }
 }
 
-async function runBenchmark(url, name) {
+async function runBenchmark(url, name, outputDir, timestamp) {
   console.log(`\n🏃 Running benchmark for ${name}...`);
   console.log(`URL: ${url}`);
   console.log(`Iterations: ${ITERATIONS} (concurrency: ${CONCURRENCY})\n`);
@@ -86,6 +86,21 @@ async function runBenchmark(url, name) {
       const i = nextIndex++;
       if (i >= ITERATIONS) break;
       const result = await measureResponseTime(url);
+
+      // Save content to output directory
+      if (result.success && result.content) {
+        const safeName = name.replace(/[^a-zA-Z0-9-]/g, "_");
+        const contentPath = path.join(
+          outputDir,
+          `${timestamp}-${safeName}-${i}.html`
+        );
+        await fs.promises
+          .writeFile(contentPath, result.content, "utf8")
+          .catch((err) => {
+            console.error(`Failed to write content file: ${err.message}`);
+          });
+      }
+
       results.push(result);
       completed++;
       process.stdout.write(`  Progress: ${completed}/${ITERATIONS}\r`);
@@ -155,80 +170,122 @@ function formatTime(ms) {
 }
 
 async function main() {
+  // Setup output directory and timestamp
+  const timestamp = new Date().toISOString();
+  const safeStamp = timestamp.replace(/[:.]/g, "-");
+  const outputDir = path.resolve(__dirname, "out");
+  await fs.promises.mkdir(outputDir, { recursive: true });
+
+  // Array to capture formatted output
+  let formattedOutput = [];
+
   console.log("=".repeat(60));
   console.log("  SSR Performance Benchmark: Cloudflare vs Vercel");
   console.log("=".repeat(60));
 
+  formattedOutput.push("=".repeat(60));
+  formattedOutput.push("  SSR Performance Benchmark: Cloudflare vs Vercel");
+  formattedOutput.push("=".repeat(60));
+
   const allResults = [];
 
   for (const test of tests) {
-    console.log("\n" + "-".repeat(60));
-    console.log(`Test: ${test.name}`);
-    console.log("-".repeat(60));
+    const sectionHeader = `\n${"-".repeat(60)}\nTest: ${test.name}\n${"-".repeat(60)}`;
+    console.log(sectionHeader);
+    formattedOutput.push(sectionHeader);
 
     const cfResults = await runBenchmark(
       test.cfUrl,
-      `${test.name} - Cloudflare`
+      `${test.name} - Cloudflare`,
+      outputDir,
+      `${safeStamp}-cf`
     );
     const vercelResults = await runBenchmark(
       test.vercelUrl,
-      `${test.name} - Vercel`
+      `${test.name} - Vercel`,
+      outputDir,
+      `${safeStamp}-vercel`
     );
 
-    console.log("=".repeat(60));
-    console.log(`  RESULTS (${test.name})`);
-    console.log("=".repeat(60));
+    const resultsHeader = `${"=".repeat(60)}\n  RESULTS (${test.name})\n${"=".repeat(60)}`;
+    console.log(resultsHeader);
+    formattedOutput.push(resultsHeader);
 
     if (cfResults) {
-      console.log("\n📊 Cloudflare Results:");
-      console.log(
-        `  Successful requests: ${cfResults.successful}/${ITERATIONS}`
-      );
+      const cfOutput = [
+        "\n📊 Cloudflare Results:",
+        `  Successful requests: ${cfResults.successful}/${ITERATIONS}`,
+      ];
       if (cfResults.failed > 0) {
-        console.log(`  Failed requests: ${cfResults.failed}/${ITERATIONS}`);
-        console.log(`  Failure rate: ${cfResults.failureRate.toFixed(2)}%`);
-        console.log(`  Status codes:`, cfResults.statusCodes);
+        cfOutput.push(`  Failed requests: ${cfResults.failed}/${ITERATIONS}`);
+        cfOutput.push(`  Failure rate: ${cfResults.failureRate.toFixed(2)}%`);
+        cfOutput.push(
+          `  Status codes: ${JSON.stringify(cfResults.statusCodes)}`
+        );
         if (cfResults.errors) {
-          console.log(`  Errors:`, cfResults.errors);
+          cfOutput.push(`  Errors: ${JSON.stringify(cfResults.errors)}`);
         }
       }
-      console.log(`  Min:  ${formatTime(cfResults.min)}`);
-      console.log(`  Max:  ${formatTime(cfResults.max)}`);
-      console.log(`  Mean: ${formatTime(cfResults.mean)}`);
+      cfOutput.push(`  Min:  ${formatTime(cfResults.min)}`);
+      cfOutput.push(`  Max:  ${formatTime(cfResults.max)}`);
+      cfOutput.push(`  Mean: ${formatTime(cfResults.mean)}`);
+
+      cfOutput.forEach((line) => {
+        console.log(line);
+        formattedOutput.push(line);
+      });
     }
 
     if (vercelResults) {
-      console.log("\n📊 Vercel Results:");
-      console.log(
-        `  Successful requests: ${vercelResults.successful}/${ITERATIONS}`
-      );
+      const vercelOutput = [
+        "\n📊 Vercel Results:",
+        `  Successful requests: ${vercelResults.successful}/${ITERATIONS}`,
+      ];
       if (vercelResults.failed > 0) {
-        console.log(`  Failed requests: ${vercelResults.failed}/${ITERATIONS}`);
-        console.log(`  Failure rate: ${vercelResults.failureRate.toFixed(2)}%`);
-        console.log(`  Status codes:`, vercelResults.statusCodes);
+        vercelOutput.push(
+          `  Failed requests: ${vercelResults.failed}/${ITERATIONS}`
+        );
+        vercelOutput.push(
+          `  Failure rate: ${vercelResults.failureRate.toFixed(2)}%`
+        );
+        vercelOutput.push(
+          `  Status codes: ${JSON.stringify(vercelResults.statusCodes)}`
+        );
         if (vercelResults.errors) {
-          console.log(`  Errors:`, vercelResults.errors);
+          vercelOutput.push(
+            `  Errors: ${JSON.stringify(vercelResults.errors)}`
+          );
         }
       }
-      console.log(`  Min:  ${formatTime(vercelResults.min)}`);
-      console.log(`  Max:  ${formatTime(vercelResults.max)}`);
-      console.log(`  Mean: ${formatTime(vercelResults.mean)}`);
+      vercelOutput.push(`  Min:  ${formatTime(vercelResults.min)}`);
+      vercelOutput.push(`  Max:  ${formatTime(vercelResults.max)}`);
+      vercelOutput.push(`  Mean: ${formatTime(vercelResults.mean)}`);
+
+      vercelOutput.forEach((line) => {
+        console.log(line);
+        formattedOutput.push(line);
+      });
     }
 
     if (cfResults && vercelResults) {
-      console.log("\n📈 Comparison:");
+      const comparisonOutput = ["\n📈 Comparison:"];
       const ratio = cfResults.mean / vercelResults.mean;
       if (ratio > 1) {
-        console.log(
+        comparisonOutput.push(
           `  Vercel is ${ratio.toFixed(2)}x faster than Cloudflare (by mean)`
         );
       } else {
-        console.log(
+        comparisonOutput.push(
           `  Cloudflare is ${(1 / ratio).toFixed(
             2
           )}x faster than Vercel (by mean)`
         );
       }
+
+      comparisonOutput.forEach((line) => {
+        console.log(line);
+        formattedOutput.push(line);
+      });
     }
 
     allResults.push({
@@ -238,19 +295,30 @@ async function main() {
     });
   }
 
-  console.log("\n" + "=".repeat(60));
+  const separator = "\n" + "=".repeat(60);
+  console.log(separator);
+  formattedOutput.push(separator);
 
   // Output final results summary for README
-  console.log("\n\n" + "=".repeat(60));
-  console.log("  FINAL RESULTS SUMMARY");
-  console.log("=".repeat(60) + "\n");
+  const summaryHeader = [
+    "\n\n" + "=".repeat(60),
+    "  FINAL RESULTS SUMMARY",
+    "=".repeat(60) + "\n",
+  ];
+  summaryHeader.forEach((line) => {
+    console.log(line);
+    formattedOutput.push(line);
+  });
 
   for (const result of allResults) {
     const cf = result.results.cloudflare;
     const vercel = result.results.vercel;
 
-    console.log(`## ${result.name}`);
+    const testHeader = `## ${result.name}`;
+    console.log(testHeader);
     console.log();
+    formattedOutput.push(testHeader);
+    formattedOutput.push("");
 
     if (cf && vercel) {
       const ratio = vercel.mean / cf.mean;
@@ -260,34 +328,53 @@ async function main() {
       const cfVariability = cf.max - cf.min;
       const vercelVariability = vercel.max - vercel.min;
 
-      console.log(`| Platform   | Mean | Min | Max | Variability |`);
-      console.log(`|------------|------|-----|-----|-------------|`);
-      console.log(
-        `| Cloudflare | ${formatTime(cf.mean)} | ${formatTime(cf.min)} | ${formatTime(cf.max)} | ${formatTime(cfVariability)} |`
-      );
-      console.log(
-        `| Vercel     | ${formatTime(vercel.mean)} | ${formatTime(vercel.min)} | ${formatTime(vercel.max)} | ${formatTime(vercelVariability)} |`
-      );
-      console.log();
-      console.log(`**Winner:** ${winner} (${speedup.toFixed(2)}x faster)`);
-      console.log();
+      const tableOutput = [
+        `| Platform   | Mean | Min | Max | Variability |`,
+        `|------------|------|-----|-----|-------------|`,
+        `| Cloudflare | ${formatTime(cf.mean)} | ${formatTime(cf.min)} | ${formatTime(cf.max)} | ${formatTime(cfVariability)} |`,
+        `| Vercel     | ${formatTime(vercel.mean)} | ${formatTime(vercel.min)} | ${formatTime(vercel.max)} | ${formatTime(vercelVariability)} |`,
+        "",
+        `**Winner:** ${winner} (${speedup.toFixed(2)}x faster)`,
+        "",
+      ];
+
+      tableOutput.forEach((line) => {
+        console.log(line);
+        formattedOutput.push(line);
+      });
     }
   }
 
-  console.log("---");
-  console.log(
-    `\n*Benchmark run: ${new Date().toISOString().split("T")[0]} • ${ITERATIONS} iterations • Concurrency: ${CONCURRENCY}*`
-  );
-  console.log("\n" + "=".repeat(60) + "\n");
+  const footer = [
+    "---",
+    `\n*Benchmark run: ${new Date().toISOString().split("T")[0]} • ${ITERATIONS} iterations • Concurrency: ${CONCURRENCY}*`,
+    "\n" + "=".repeat(60) + "\n",
+  ];
+  footer.forEach((line) => {
+    console.log(line);
+    formattedOutput.push(line);
+  });
 
-  // Write consolidated results to results-(datetime).json inside results/ directory
+  // Write formatted results to text file
   try {
     const resultsDir = path.resolve(__dirname, "results");
     await fs.promises.mkdir(resultsDir, { recursive: true });
 
-    const timestamp = new Date().toISOString();
-    const safeStamp = timestamp.replace(/[:.]/g, "-");
-    const filePath = path.join(resultsDir, `results-${safeStamp}.json`);
+    const textFilePath = path.join(resultsDir, `results-${safeStamp}.txt`);
+    await fs.promises.writeFile(
+      textFilePath,
+      formattedOutput.join("\n"),
+      "utf8"
+    );
+    console.log(`📝 Formatted results written to: ${textFilePath}`);
+  } catch (err) {
+    console.error("Failed to write formatted results file:", err.message);
+  }
+
+  // Write consolidated results to results-(datetime).json inside results/ directory
+  try {
+    const resultsDir = path.resolve(__dirname, "results");
+    const jsonFilePath = path.join(resultsDir, `results-${safeStamp}.json`);
 
     const summary = {
       timestamp,
@@ -297,14 +384,16 @@ async function main() {
     };
 
     await fs.promises.writeFile(
-      filePath,
+      jsonFilePath,
       JSON.stringify(summary, null, 2),
       "utf8"
     );
-    console.log(`📝 Results written to: ${filePath}`);
+    console.log(`📝 JSON results written to: ${jsonFilePath}`);
   } catch (err) {
-    console.error("Failed to write results file:", err.message);
+    console.error("Failed to write JSON results file:", err.message);
   }
+
+  console.log(`📁 Response content written to: ${outputDir}/`);
 }
 
 main().catch(console.error);
