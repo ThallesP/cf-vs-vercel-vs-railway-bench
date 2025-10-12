@@ -176,23 +176,18 @@ async function main() {
   const outputDir = path.resolve(__dirname, "out");
   await fs.promises.mkdir(outputDir, { recursive: true });
 
-  // Array to capture formatted output
+  // Array to capture formatted output (only for summary)
   let formattedOutput = [];
 
   console.log("=".repeat(60));
   console.log("  SSR Performance Benchmark: Cloudflare vs Vercel");
   console.log("=".repeat(60));
 
-  formattedOutput.push("=".repeat(60));
-  formattedOutput.push("  SSR Performance Benchmark: Cloudflare vs Vercel");
-  formattedOutput.push("=".repeat(60));
-
   const allResults = [];
 
   for (const test of tests) {
     const sectionHeader = `\n${"-".repeat(60)}\nTest: ${test.name}\n${"-".repeat(60)}`;
     console.log(sectionHeader);
-    formattedOutput.push(sectionHeader);
 
     const cfResults = await runBenchmark(
       test.cfUrl,
@@ -209,7 +204,6 @@ async function main() {
 
     const resultsHeader = `${"=".repeat(60)}\n  RESULTS (${test.name})\n${"=".repeat(60)}`;
     console.log(resultsHeader);
-    formattedOutput.push(resultsHeader);
 
     if (cfResults) {
       const cfOutput = [
@@ -232,7 +226,6 @@ async function main() {
 
       cfOutput.forEach((line) => {
         console.log(line);
-        formattedOutput.push(line);
       });
     }
 
@@ -263,7 +256,6 @@ async function main() {
 
       vercelOutput.forEach((line) => {
         console.log(line);
-        formattedOutput.push(line);
       });
     }
 
@@ -284,7 +276,6 @@ async function main() {
 
       comparisonOutput.forEach((line) => {
         console.log(line);
-        formattedOutput.push(line);
       });
     }
 
@@ -297,11 +288,10 @@ async function main() {
 
   const separator = "\n" + "=".repeat(60);
   console.log(separator);
-  formattedOutput.push(separator);
 
   // Output final results summary for README
   const summaryHeader = [
-    "\n\n" + "=".repeat(60),
+    "=".repeat(60),
     "  FINAL RESULTS SUMMARY",
     "=".repeat(60) + "\n",
   ];

@@ -1,0 +1,171 @@
+============================================================
+  SSR Performance Benchmark: Cloudflare vs Vercel
+============================================================
+
+------------------------------------------------------------
+Test: next-js
+------------------------------------------------------------
+============================================================
+  RESULTS (next-js)
+============================================================
+
+📊 Cloudflare Results:
+  Successful requests: 100/100
+  Min:  0.616s
+  Max:  1.910s
+  Mean: 1.015s
+
+📊 Vercel Results:
+  Successful requests: 100/100
+  Min:  0.401s
+  Max:  0.736s
+  Mean: 0.493s
+
+📈 Comparison:
+  Vercel is 2.06x faster than Cloudflare (by mean)
+
+------------------------------------------------------------
+Test: react-ssr-bench
+------------------------------------------------------------
+============================================================
+  RESULTS (react-ssr-bench)
+============================================================
+
+📊 Cloudflare Results:
+  Successful requests: 100/100
+  Min:  0.085s
+  Max:  0.360s
+  Mean: 0.158s
+
+📊 Vercel Results:
+  Successful requests: 100/100
+  Min:  0.065s
+  Max:  0.317s
+  Mean: 0.107s
+
+📈 Comparison:
+  Vercel is 1.47x faster than Cloudflare (by mean)
+
+------------------------------------------------------------
+Test: sveltekit
+------------------------------------------------------------
+============================================================
+  RESULTS (sveltekit)
+============================================================
+
+📊 Cloudflare Results:
+  Successful requests: 100/100
+  Min:  0.056s
+  Max:  0.271s
+  Mean: 0.101s
+
+📊 Vercel Results:
+  Successful requests: 100/100
+  Min:  0.118s
+  Max:  0.228s
+  Mean: 0.146s
+
+📈 Comparison:
+  Cloudflare is 1.44x faster than Vercel (by mean)
+
+------------------------------------------------------------
+Test: realistic-math-bench
+------------------------------------------------------------
+============================================================
+  RESULTS (realistic-math-bench)
+============================================================
+
+📊 Cloudflare Results:
+  Successful requests: 100/100
+  Min:  0.399s
+  Max:  1.164s
+  Mean: 0.673s
+
+📊 Vercel Results:
+  Successful requests: 100/100
+  Min:  0.639s
+  Max:  0.779s
+  Mean: 0.667s
+
+📈 Comparison:
+  Vercel is 1.01x faster than Cloudflare (by mean)
+
+------------------------------------------------------------
+Test: vanilla-slower
+------------------------------------------------------------
+============================================================
+  RESULTS (vanilla-slower)
+============================================================
+
+📊 Cloudflare Results:
+  Successful requests: 100/100
+  Min:  0.088s
+  Max:  0.397s
+  Mean: 0.156s
+
+📊 Vercel Results:
+  Successful requests: 100/100
+  Min:  0.133s
+  Max:  0.306s
+  Mean: 0.164s
+
+📈 Comparison:
+  Cloudflare is 1.05x faster than Vercel (by mean)
+
+============================================================
+
+
+============================================================
+  FINAL RESULTS SUMMARY
+============================================================
+
+## next-js
+
+| Platform   | Mean | Min | Max | Variability |
+|------------|------|-----|-----|-------------|
+| Cloudflare | 1.015s | 0.616s | 1.910s | 1.293s |
+| Vercel     | 0.493s | 0.401s | 0.736s | 0.335s |
+
+**Winner:** Vercel (2.06x faster)
+
+## react-ssr-bench
+
+| Platform   | Mean | Min | Max | Variability |
+|------------|------|-----|-----|-------------|
+| Cloudflare | 0.158s | 0.085s | 0.360s | 0.276s |
+| Vercel     | 0.107s | 0.065s | 0.317s | 0.251s |
+
+**Winner:** Vercel (1.47x faster)
+
+## sveltekit
+
+| Platform   | Mean | Min | Max | Variability |
+|------------|------|-----|-----|-------------|
+| Cloudflare | 0.101s | 0.056s | 0.271s | 0.215s |
+| Vercel     | 0.146s | 0.118s | 0.228s | 0.110s |
+
+**Winner:** Cloudflare (1.44x faster)
+
+## realistic-math-bench
+
+| Platform   | Mean | Min | Max | Variability |
+|------------|------|-----|-----|-------------|
+| Cloudflare | 0.673s | 0.399s | 1.164s | 0.766s |
+| Vercel     | 0.667s | 0.639s | 0.779s | 0.140s |
+
+**Winner:** Vercel (1.01x faster)
+
+## vanilla-slower
+
+| Platform   | Mean | Min | Max | Variability |
+|------------|------|-----|-----|-------------|
+| Cloudflare | 0.156s | 0.088s | 0.397s | 0.309s |
+| Vercel     | 0.164s | 0.133s | 0.306s | 0.173s |
+
+**Winner:** Cloudflare (1.05x faster)
+
+---
+
+*Benchmark run: 2025-10-12 • 100 iterations • Concurrency: 10*
+
+============================================================
