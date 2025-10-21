@@ -4,8 +4,8 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"dev": "bun run server.js",
-		"start": "bun run server.js"
+		"dev": "node server.js",
+		"start": "node server.js"
 	},
 	"dependencies": {
 		"react": "^18.2.0",

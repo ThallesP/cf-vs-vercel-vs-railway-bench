@@ -1,60 +1,59 @@
 // Vanilla React SSR implementation for Railway
 // Uses ReactDOMServer.renderToString to render React components to HTML
 
+import http from "http";
 import React from "react";
 import { renderToString } from "react-dom/server";
 import ComplexComponent from "./ComplexComponent.mjs";
 
 const port = process.env.PORT || 3000;
 
-Bun.serve({
-	port,
-	fetch(req) {
-		console.log("rendering", Date.now());
+const server = http.createServer((_req, res) => {
+	console.log("rendering", Date.now());
 
-		const currentTime = new Date().toLocaleString();
+	const currentTime = new Date().toLocaleString();
 
-		// Render the React component to HTML string
-		const componentHtml = renderToString(
+	// Render the React component to HTML string
+	const componentHtml = renderToString(
+		React.createElement(
+			"main",
+			{
+				style: {
+					display: "flex",
+					flexDirection: "column",
+					alignItems: "center",
+					justifyContent: "center",
+					minHeight: "100vh",
+				},
+			},
 			React.createElement(
-				"main",
+				"h1",
 				{
 					style: {
-						display: "flex",
-						flexDirection: "column",
-						alignItems: "center",
-						justifyContent: "center",
-						minHeight: "100vh",
+						fontSize: "24px",
+						fontWeight: "bold",
+						marginBottom: "16px",
 					},
 				},
-				React.createElement(
-					"h1",
-					{
-						style: {
-							fontSize: "24px",
-							fontWeight: "bold",
-							marginBottom: "16px",
-						},
-					},
-					"Last rendered at:",
-				),
-				React.createElement(
-					"p",
-					{
-						style: {
-							fontSize: "18px",
-							fontFamily: "monospace",
-							padding: "16px",
-							borderRadius: "4px",
-						},
-					},
-					currentTime,
-				),
-				React.createElement(ComplexComponent),
+				"Last rendered at:",
 			),
-		);
+			React.createElement(
+				"p",
+				{
+					style: {
+						fontSize: "18px",
+						fontFamily: "monospace",
+						padding: "16px",
+						borderRadius: "4px",
+					},
+				},
+				currentTime,
+			),
+			React.createElement(ComplexComponent),
+		),
+	);
 
-		const html = `
+	const html = `
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -75,12 +74,12 @@ Bun.serve({
     </html>
   `;
 
-		return new Response(html, {
-			headers: {
-				"Content-Type": "text/html; charset=utf-8",
-			},
-		});
-	},
+	res.writeHead(200, {
+		"Content-Type": "text/html; charset=utf-8",
+	});
+	res.end(html);
 });
 
-console.log(`Server running on port ${port}`);
+server.listen(port, () => {
+	console.log(`Server running on port ${port}`);
+});
