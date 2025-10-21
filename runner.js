@@ -7,7 +7,8 @@ const tests = [
 			"https://next-cf-bench.theo-s-cool-new-test-account-10-3.workers.dev/bench",
 		vercelUrl: "https://next-bench-beryl.vercel.app/bench",
 		railwayUrl: "https://next-bench-railway-edition.up.railway.app/bench",
-		// railwayUrl: "https://next-bench-railway-edition-bun.up.railway.app/bench", // bun
+		railwayBunUrl:
+			"https://next-bench-railway-edition-bun.up.railway.app/bench",
 	},
 	{
 		name: "react-ssr-bench",
@@ -15,7 +16,8 @@ const tests = [
 			"https://react-ssr-cf.theo-s-cool-new-test-account-10-3.workers.dev/bench",
 		vercelUrl: "https://react-ssr-bench.vercel.app/api/bench",
 		railwayUrl: "https://react-ssr-bench-railway-edition.up.railway.app/bench",
-		// railwayUrl: "https://react-ssr-bench-railway-edition-bun.up.railway.app/bench", //bun
+		railwayBunUrl:
+			"https://react-ssr-bench-railway-edition-bun.up.railway.app/bench",
 	},
 	{
 		name: "sveltekit",
@@ -23,7 +25,8 @@ const tests = [
 			"https://cf-sveltekit-bench.theo-s-cool-new-test-account-10-3.workers.dev/",
 		vercelUrl: "https://sveltekit-bench.vercel.app/",
 		railwayUrl: "https://sveltekit-bench-railway-edition.up.railway.app/",
-		// railwayUrl: "https://sveltekit-bench-railway-edition-bun.up.railway.app/", //bun
+		railwayBunUrl:
+			"https://sveltekit-bench-railway-edition-bun.up.railway.app/",
 	},
 	// {
 	//   name: "shitty-sine-bench",
@@ -38,8 +41,8 @@ const tests = [
 		vercelUrl: "https://vanilla-bench-six.vercel.app/api/realistic-math-bench",
 		railwayUrl:
 			"https://vanilla-bench-railway-edition.up.railway.app/realistic-math-bench",
-		// railwayUrl:
-		// "https://vanilla-bench-railway-edition-bun.up.railway.app/realistic-math-bench", // bun
+		railwayBunUrl:
+			"https://vanilla-bench-railway-edition-bun.up.railway.app/realistic-math-bench",
 	},
 	{
 		name: "vanilla-slower",
@@ -48,8 +51,8 @@ const tests = [
 		vercelUrl: "https://vanilla-bench-six.vercel.app/api/slower-bench",
 		railwayUrl:
 			"https://vanilla-bench-railway-edition.up.railway.app/slower-bench",
-		// railwayUrl:
-		// "https://vanilla-bench-railway-edition-bun.up.railway.app/slower-bench", // bun
+		railwayBunUrl:
+			"https://vanilla-bench-railway-edition-bun.up.railway.app/slower-bench",
 	},
 ];
 
@@ -221,6 +224,12 @@ async function main() {
 			outputDir,
 			`${safeStamp}-railway`,
 		);
+		const railwayBunResults = await runBenchmark(
+			test.railwayBunUrl,
+			`${test.name} - Railway (Bun)`,
+			outputDir,
+			`${safeStamp}-railway-bun`,
+		);
 
 		const resultsHeader = `${"=".repeat(60)}\n  RESULTS (${test.name})\n${"=".repeat(60)}`;
 		console.log(resultsHeader);
@@ -309,7 +318,37 @@ async function main() {
 			});
 		}
 
-		if (cfResults && vercelResults && railwayResults) {
+		if (railwayBunResults) {
+			const railwayBunOutput = [
+				"\n📊 Railway (Bun) Results:",
+				`  Successful requests: ${railwayBunResults.successful}/${ITERATIONS}`,
+			];
+			if (railwayBunResults.failed > 0) {
+				railwayBunOutput.push(
+					`  Failed requests: ${railwayBunResults.failed}/${ITERATIONS}`,
+				);
+				railwayBunOutput.push(
+					`  Failure rate: ${railwayBunResults.failureRate.toFixed(2)}%`,
+				);
+				railwayBunOutput.push(
+					`  Status codes: ${JSON.stringify(railwayBunResults.statusCodes)}`,
+				);
+				if (railwayBunResults.errors) {
+					railwayBunOutput.push(
+						`  Errors: ${JSON.stringify(railwayBunResults.errors)}`,
+					);
+				}
+			}
+			railwayBunOutput.push(`  Min:  ${formatTime(railwayBunResults.min)}`);
+			railwayBunOutput.push(`  Max:  ${formatTime(railwayBunResults.max)}`);
+			railwayBunOutput.push(`  Mean: ${formatTime(railwayBunResults.mean)}`);
+
+			railwayBunOutput.forEach((line) => {
+				console.log(line);
+			});
+		}
+
+		if (cfResults && vercelResults && railwayResults && railwayBunResults) {
 			const comparisonOutput = ["\n📈 Comparison & Rankings:"];
 
 			// Create array of platforms with their mean times
@@ -317,6 +356,7 @@ async function main() {
 				{ name: "Cloudflare", mean: cfResults.mean },
 				{ name: "Vercel", mean: vercelResults.mean },
 				{ name: "Railway", mean: railwayResults.mean },
+				{ name: "Railway (Bun)", mean: railwayBunResults.mean },
 			].sort((a, b) => a.mean - b.mean);
 
 			// Display rankings
@@ -328,6 +368,9 @@ async function main() {
 			);
 			comparisonOutput.push(
 				`  🥉 Third Place:  ${platforms[2].name} (${formatTime(platforms[2].mean)})`,
+			);
+			comparisonOutput.push(
+				`  4️⃣  Fourth Place: ${platforms[3].name} (${formatTime(platforms[3].mean)})`,
 			);
 			comparisonOutput.push(``);
 			comparisonOutput.push(
@@ -345,11 +388,13 @@ async function main() {
 				cloudflare: test.cfUrl,
 				vercel: test.vercelUrl,
 				railway: test.railwayUrl,
+				railwayBun: test.railwayBunUrl,
 			},
 			results: {
 				cloudflare: cfResults,
 				vercel: vercelResults,
 				railway: railwayResults,
+				railwayBun: railwayBunResults,
 			},
 		});
 	}
@@ -372,6 +417,7 @@ async function main() {
 		const cf = result.results.cloudflare;
 		const vercel = result.results.vercel;
 		const railway = result.results.railway;
+		const railwayBun = result.results.railwayBun;
 
 		const testHeader = `## ${result.name}`;
 		console.log(testHeader);
@@ -379,7 +425,7 @@ async function main() {
 		formattedOutput.push(testHeader);
 		formattedOutput.push("");
 
-		if (cf && vercel && railway) {
+		if (cf && vercel && railway && railwayBun) {
 			// Create array of platforms with their stats
 			const platforms = [
 				{
@@ -403,18 +449,27 @@ async function main() {
 					max: railway.max,
 					variability: railway.max - railway.min,
 				},
+				{
+					name: "Railway (Bun)",
+					mean: railwayBun.mean,
+					min: railwayBun.min,
+					max: railwayBun.max,
+					variability: railwayBun.max - railwayBun.min,
+				},
 			].sort((a, b) => a.mean - b.mean);
 
 			const tableOutput = [
-				`| Platform   | Mean | Min | Max | Variability |`,
-				`|------------|------|-----|-----|-------------|`,
-				`| Cloudflare | ${formatTime(cf.mean)} | ${formatTime(cf.min)} | ${formatTime(cf.max)} | ${formatTime(cf.max - cf.min)} |`,
-				`| Vercel     | ${formatTime(vercel.mean)} | ${formatTime(vercel.min)} | ${formatTime(vercel.max)} | ${formatTime(vercel.max - vercel.min)} |`,
-				`| Railway    | ${formatTime(railway.mean)} | ${formatTime(railway.min)} | ${formatTime(railway.max)} | ${formatTime(railway.max - railway.min)} |`,
+				`| Platform       | Mean | Min | Max | Variability |`,
+				`|----------------|------|-----|-----|-------------|`,
+				`| Cloudflare     | ${formatTime(cf.mean)} | ${formatTime(cf.min)} | ${formatTime(cf.max)} | ${formatTime(cf.max - cf.min)} |`,
+				`| Vercel         | ${formatTime(vercel.mean)} | ${formatTime(vercel.min)} | ${formatTime(vercel.max)} | ${formatTime(vercel.max - vercel.min)} |`,
+				`| Railway        | ${formatTime(railway.mean)} | ${formatTime(railway.min)} | ${formatTime(railway.max)} | ${formatTime(railway.max - railway.min)} |`,
+				`| Railway (Bun)  | ${formatTime(railwayBun.mean)} | ${formatTime(railwayBun.min)} | ${formatTime(railwayBun.max)} | ${formatTime(railwayBun.max - railwayBun.min)} |`,
 				"",
 				`**🥇 First Place:** ${platforms[0].name} (${formatTime(platforms[0].mean)})`,
 				`**🥈 Second Place:** ${platforms[1].name} (${formatTime(platforms[1].mean)})`,
 				`**🥉 Third Place:** ${platforms[2].name} (${formatTime(platforms[2].mean)})`,
+				`**4️⃣  Fourth Place:** ${platforms[3].name} (${formatTime(platforms[3].mean)})`,
 				"",
 				`**🏆 Winner:** ${platforms[0].name} - ${(platforms[1].mean / platforms[0].mean).toFixed(2)}x faster than second place`,
 				"",
