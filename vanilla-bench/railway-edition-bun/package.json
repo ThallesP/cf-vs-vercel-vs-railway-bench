@@ -1,0 +1,12 @@
+{
+	"name": "vanilla-railway-edition",
+	"version": "1.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "bun run server.js",
+		"start": "bun run server.js"
+	},
+	"dependencies": {},
+	"packageManager": "bun@1.3.0"
+}

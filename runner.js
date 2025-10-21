@@ -7,6 +7,7 @@ const tests = [
 			"https://next-cf-bench.theo-s-cool-new-test-account-10-3.workers.dev/bench",
 		vercelUrl: "https://next-bench-beryl.vercel.app/bench",
 		railwayUrl: "https://next-bench-railway-edition.up.railway.app/bench",
+		// railwayUrl: "https://next-bench-railway-edition-bun.up.railway.app/bench", // bun
 	},
 	{
 		name: "react-ssr-bench",
@@ -14,6 +15,7 @@ const tests = [
 			"https://react-ssr-cf.theo-s-cool-new-test-account-10-3.workers.dev/bench",
 		vercelUrl: "https://react-ssr-bench.vercel.app/api/bench",
 		railwayUrl: "https://react-ssr-bench-railway-edition.up.railway.app/bench",
+		// railwayUrl: "https://react-ssr-bench-railway-edition-bun.up.railway.app/bench", //bun
 	},
 	{
 		name: "sveltekit",
@@ -21,6 +23,7 @@ const tests = [
 			"https://cf-sveltekit-bench.theo-s-cool-new-test-account-10-3.workers.dev/",
 		vercelUrl: "https://sveltekit-bench.vercel.app/",
 		railwayUrl: "https://sveltekit-bench-railway-edition.up.railway.app/",
+		// railwayUrl: "https://sveltekit-bench-railway-edition-bun.up.railway.app/", //bun
 	},
 	// {
 	//   name: "shitty-sine-bench",
@@ -35,6 +38,8 @@ const tests = [
 		vercelUrl: "https://vanilla-bench-six.vercel.app/api/realistic-math-bench",
 		railwayUrl:
 			"https://vanilla-bench-railway-edition.up.railway.app/realistic-math-bench",
+		// railwayUrl:
+		// "https://vanilla-bench-railway-edition-bun.up.railway.app/realistic-math-bench", // bun
 	},
 	{
 		name: "vanilla-slower",
@@ -43,6 +48,8 @@ const tests = [
 		vercelUrl: "https://vanilla-bench-six.vercel.app/api/slower-bench",
 		railwayUrl:
 			"https://vanilla-bench-railway-edition.up.railway.app/slower-bench",
+		// railwayUrl:
+		// "https://vanilla-bench-railway-edition-bun.up.railway.app/slower-bench", // bun
 	},
 ];
 
