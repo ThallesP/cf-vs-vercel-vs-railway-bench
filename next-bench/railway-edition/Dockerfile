@@ -50,4 +50,4 @@ USER nextjs
 
 ENV PORT=8080
 
-CMD HOSTNAME"0.0.0.0" node server.js
+CMD HOSTNAME="0.0.0.0" node server.js
